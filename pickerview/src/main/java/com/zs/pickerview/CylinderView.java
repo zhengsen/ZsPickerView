@@ -6,6 +6,7 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.Handler;
 import android.util.AttributeSet;
@@ -13,13 +14,30 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+
 /**
  * Created by zhengsen on 2016/7/6.
  */
 public class CylinderView extends View {
+
+    public enum ACTION {
+        CLICK, FILING, DRAGGING
+    }
+
     private Context context;
     private Handler handler;
     private GestureDetector gestureDetector;
+    private ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledFuture<?> scheduledFuture;
+
+    private boolean isLoop;//是否是循环的
+    private int showItems;//可见的item数量
+
+
     /**
      * textColor & textSize
      */
@@ -34,24 +52,35 @@ public class CylinderView extends View {
     private Paint centerTextPaint;
     private Paint indicatorPaint;
 
+    private Rect tempRect;
+
+    private List<String> items;
+
     public CylinderView(Context context) {
         super(context);
         this.context = context;
-        initParams();
+        initCylinderView();
     }
 
     public CylinderView(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.context = context;
-        initParams();
         if (attrs != null) {
             getAttributes(attrs);
         }
+        initCylinderView();
     }
 
     public CylinderView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         this.context = context;
+        initCylinderView();
+    }
+
+    private void initCylinderView() {
+        handler = new CylinderMessageHandler();
+        gestureDetector = new GestureDetector(context, new CylinderViewGestureListener(this));
+
         initParams();
     }
 
@@ -84,6 +113,10 @@ public class CylinderView extends View {
     }
 
     private void remeasure() {
+        if (items == null) {
+            return;
+        }
+
 
     }
 
